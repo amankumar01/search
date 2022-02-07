@@ -72,6 +72,33 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+def graphSearch(problem, queue):
+    visited = dict()
+    parents = dict()
+    start_state = problem.getStartState()
+    queue.push((start_state, None, None, 0))
+    iterations = 0
+    while(not queue.isEmpty()):
+        state, prev_action, parent, cost = queue.pop()
+
+        if problem.isGoalState(state):
+            ans = []
+            visited[state] = prev_action
+            parents[state] = parent
+            while parents[state] is not None:
+                ans.append(visited[state])
+                state = parents[state]
+            ans.reverse()
+            return ans      
+
+        if state not in visited:
+            visited[state] = prev_action
+            parents[state] = parent
+            for successor, action, stepCost in problem.getSuccessors(state):
+                queue.push((successor, action, state, cost + stepCost))
+    
+    return -1
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -87,129 +114,20 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    from game import Directions
     from util import Stack
-    from game import Configuration
-    dfs = Stack()
-    ans = list()
-    visited = dict()
-    parents = dict()
-    start_state = problem.getStartState()
-    dfs.push(start_state)
-    iterations = 0
-    current_direction = None
-    current_parent = None
-    while(not dfs.isEmpty()):
-        current_state = dfs.pop()
-        if(iterations != 0):
-            current_direction = current_state[1]
-            current_parent = current_state[2]
-            current_state = current_state[0]
-
-        if(problem.isGoalState(current_state)):
-            visited[current_state] = current_direction
-            parents[current_state] = current_parent
-            while(current_state != problem.getStartState()):
-                ans.append(visited[current_state])
-                current_state = parents[current_state]
-            ans.reverse()
-            return ans      
-
-        if(current_state not in visited):
-            visited[current_state] = current_direction
-            parents[current_state] = current_parent
-            num_added = 0
-            for s in problem.getSuccessors(current_state):
-                dfs.push(s)
-        iterations += 1
-    
-    return -1
-
-            
-
-
-    
+    return graphSearch(problem, Stack())
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    from game import Directions
     from util import Queue
-    from game import Configuration
-    dfs = Queue()
-    ans = list()
-    visited = dict()
-    parents = dict()
-    start_state = problem.getStartState()
-    dfs.push(start_state)
-    iterations = 0
-    current_direction = None
-    current_parent = None
-    while(not dfs.isEmpty()):
-        current_state = dfs.pop()
-        if(iterations != 0):
-            current_direction = current_state[1]
-            current_parent = current_state[2]
-            current_state = current_state[0]
-
-        if(problem.isGoalState(current_state)):
-            visited[current_state] = current_direction
-            parents[current_state] = current_parent
-            while(current_state != problem.getStartState()):
-                ans.append(visited[current_state])
-                current_state = parents[current_state]
-            ans.reverse()
-            return ans      
-
-        if(current_state not in visited):
-            visited[current_state] = current_direction
-            parents[current_state] = current_parent
-            num_added = 0
-            for s in problem.getSuccessors(current_state):
-                dfs.push(s)
-        iterations += 1
-    
-    return -1
+    return graphSearch(problem, Queue())
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    from util import PriorityQueue
-    from game import Configuration
-    dfs = PriorityQueue()
-    ans = list()
-    visited = dict()
-    parents = dict()
-    start_state = problem.getStartState()
-    dfs.push(start_state, 0)
-    iterations = 0
-    current_direction = None
-    current_parent = None
-    while(not dfs.isEmpty()):
-        current_state = dfs.pop()
-        if(iterations != 0):
-            current_direction = current_state[1]
-            current_parent = current_state[2]
-            current_state = current_state[0]
-
-        if(problem.isGoalState(current_state)):
-            visited[current_state] = current_direction
-            parents[current_state] = current_parent
-            while(current_state != problem.getStartState()):
-                ans.append(visited[current_state])
-                current_state = parents[current_state]
-            ans.reverse()
-            return ans      
-
-        if(current_state not in visited):
-            visited[current_state] = current_direction
-            parents[current_state] = current_parent
-            num_added = 0
-            for s in problem.getSuccessors(current_state):
-                dfs.push(s, s[3])
-        iterations += 1
-    
-    return -1
+    from util import PriorityQueueWithFunction
+    return graphSearch(problem, PriorityQueueWithFunction(lambda x: x[3]))
 
 def nullHeuristic(state, problem=None):
     """
@@ -221,42 +139,8 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    from util import PriorityQueue
-    from game import Configuration
-    dfs = PriorityQueue()
-    ans = list()
-    visited = dict()
-    parents = dict()
-    start_state = problem.getStartState()
-    dfs.push(start_state, 0 + heuristic(start_state, problem))
-    iterations = 0
-    current_direction = None
-    current_parent = None
-    while(not dfs.isEmpty()):
-        current_state = dfs.pop()
-        if(iterations != 0):
-            current_direction = current_state[1]
-            current_parent = current_state[2]
-            current_state = current_state[0]
-
-        if(problem.isGoalState(current_state)):
-            visited[current_state] = current_direction
-            parents[current_state] = current_parent
-            while(current_state != problem.getStartState()):
-                ans.append(visited[current_state])
-                current_state = parents[current_state]
-            ans.reverse()
-            return ans      
-
-        if(current_state not in visited):
-            visited[current_state] = current_direction
-            parents[current_state] = current_parent
-            num_added = 0
-            for s in problem.getSuccessors(current_state):
-                dfs.push(s, s[3] + heuristic(s[0], problem))
-        iterations += 1
-    
-    return -1
+    from util import PriorityQueueWithFunction
+    return graphSearch(problem, PriorityQueueWithFunction(lambda x: x[3] + heuristic(x[0], problem)))
 
 
 # Abbreviations
